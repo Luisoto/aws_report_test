@@ -1,0 +1,35 @@
+name: Upload to S3
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+jobs:
+  zip_and_upload_to_s3:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 14
+      - name: Install dependencies
+        run: npm install
+      - name: Run tests
+        run: npm test
+        env:
+          DYNAMODB_TABLE: "ItemsTable"
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-west-2
+      - name: zip
+        run: zip -r artifact.zip . -x '*.git*'
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+      - name: Deploy file to S3 bucket
+        run: aws s3 cp ./artifact.zip s3://${{ secrets.AWS_BUCKET }}

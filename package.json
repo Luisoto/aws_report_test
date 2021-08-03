@@ -1,0 +1,26 @@
+{
+  "name": "aws_report_test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Luisoto/aws_report_test.git"
+  },
+  "author": "luisoto92@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Luisoto/aws_report_test/issues"
+  },
+  "homepage": "https://github.com/Luisoto/aws_report_test#readme",
+  "devDependencies": {
+    "aws-sdk": "^2.958.0",
+    "dotenv": "^10.0.0",
+    "excel4node": "^1.7.2",
+    "jest": "^27.0.6",
+    "pdfmake": "^0.2.2"
+  }
+}
