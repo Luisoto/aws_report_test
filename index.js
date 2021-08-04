@@ -22,6 +22,7 @@ exports.handler = async (event, context, callback) => {
 
     switch (event.httpMethod) {
         case 'POST':
+            //Call function to create a new item with the received body
             await dao.createItem(JSON.parse(event.body)).then((data) => {
                 callback(null, {
                     statusCode: 200,
@@ -41,13 +42,33 @@ exports.handler = async (event, context, callback) => {
             });
             break;
         case 'PUT':
+            await dao.updateItem(JSON.parse(event.body)).then(async (data) => {
+                console.log(data);
+                callback(null, {
+                    statusCode: 200,
+                    body: 'Item update',
+                    headers: {
+                        'Access-Control-Allow-Origin' : '*'
+                    }
+                });
+            }).catch((err) => {
+                callback(null, {
+                    statusCode: 500,
+                    body: JSON.stringify(err),
+                    headers: {
+                        'Access-Control-Allow-Origin' : '*'
+                    }
+                });
+            });
             break;
         case 'GET':
+
             if (event.resource === '/qrvey/download') {
-                //Generate file
+                //For this case we need to generate the file,
+                // first we call the scan function to get all the items on the dynamodb table
                 await dao.scanTable().then(async (data) => {
                     if (event.queryStringParameters.type === 'pdf') {
-                        //Get data for create table
+                        //Get data in a format makepdf library can read, and generate the table
                         const bodyDocDefinition = utils.itemsToDocDefinition(data.Items);
                         const dd = {
                             content: [
@@ -58,11 +79,7 @@ exports.handler = async (event, context, callback) => {
                                 }
                             ]
                         }
-                        //const pdfDoc = printer.createPdfKitDocument(dd);
-                        //pdfDoc.pipe(fs.createWriteStream('document.pdf'));
-                        //pdfDoc.end();
-
-                        var pdfDoc = printer.createPdfKitDocument(dd);
+                        let pdfDoc = printer.createPdfKitDocument(dd);
 
                         const buffer = await new Promise((resolve, reject) => {
                             let chunks = [];
@@ -71,6 +88,7 @@ exports.handler = async (event, context, callback) => {
                             pdfDoc.end();
 
                         });
+                        //Return base64 string for the pdf document
                         const response = {
                             headers: {
                                 'Content-Type': 'application/pdf',
@@ -82,7 +100,9 @@ exports.handler = async (event, context, callback) => {
                         callback(null, response)
                     }
                     else {
+                        //Call function to convert items to an excel table.
                         let wb = utils.itemsToExcel(data.Items);
+                        //Return base64 string for the excel document
                         await wb.writeToBuffer().then(buffer => {
                             const response = {
                                 headers: {
@@ -98,6 +118,7 @@ exports.handler = async (event, context, callback) => {
                 });
             }
             else {
+                // Call function to get item information
                 await dao.getItem(event.queryStringParameters).then((data) => {
                     callback(null, {
                         statusCode: 200,
@@ -118,6 +139,7 @@ exports.handler = async (event, context, callback) => {
             }
             break;
         case 'DELETE':
+            // Call function to delete an item
             await dao.deleteItem(JSON.parse(event.body)).then((data) => {
                 callback(null, {
                     statusCode: 200,
@@ -137,7 +159,12 @@ exports.handler = async (event, context, callback) => {
             });
             break;
         default:
-            statusCode = 404;
-            body = JSON.stringify('httpMethod not supported');
+            callback(null, {
+                statusCode: 404,
+                body: JSON.stringify('httpMethod not supported'),
+                headers: {
+                    'Access-Control-Allow-Origin' : '*'
+                }
+            });
     }
 };

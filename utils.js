@@ -1,6 +1,6 @@
-
 const xl = require('excel4node');
 
+//Function to convert items to excel table
 exports.itemsToExcel = (items) => {
     let wb = new xl.Workbook();
     let ws = wb.addWorksheet('Sheet 1');
@@ -34,6 +34,8 @@ exports.itemsToExcel = (items) => {
     });
     return wb;
 }
+
+//Function to convert items to an array makepdf library can read
 exports.itemsToDocDefinition = (items) => {
     const columnNames = getAllColumns(items)
     let bodyArray = [columnNames]
@@ -60,6 +62,7 @@ exports.itemsToDocDefinition = (items) => {
     return bodyArray;
 }
 
+//Function to get all columns titles
 function getAllColumns(items) {
     let columns = [];
     items.forEach(item => {

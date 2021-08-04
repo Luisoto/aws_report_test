@@ -14,6 +14,12 @@ test('It should get an item', async () => {
     });
 });
 
+test('It should update an item', async () => {
+    await index.handler(testingObjects.updateItemEvent, {}, function (err, result) {
+        expect(result.body).toBe('Item update');
+    });
+});
+
 test('It should download an excel file', async () => {
     await index.handler(testingObjects.downloadExcelEvent, {}, function (err, result) {
         expect(result.headers['Content-Type']).toBe('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
